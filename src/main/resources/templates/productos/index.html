@@ -1,0 +1,381 @@
+<!doctype html>
+
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="utf-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>Productos | CruzMarket</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <style>
+        /* Estilos para la tarjeta de producto y el sidebar de filtro */
+
+        .product-card {
+
+            transition: transform 0.2s, box-shadow 0.2s;
+
+            min-height: 420px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            border-radius: 0.5rem; /* Bordes ligeramente redondeados */
+
+            overflow: hidden;
+
+        }
+
+
+		@media (min-width: 1200px) {
+		    .container {
+		        max-width: 80%;
+		    }
+		}
+
+
+        .product-card:hover {
+
+            transform: translateY(-5px);
+
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
+
+        }
+
+
+        .product-card .card-img-top {
+
+            height: 200px;
+
+            object-fit: cover;
+
+        }
+
+
+
+        .sidebar-filter .card-header {
+
+            cursor: pointer;
+
+            padding: 0.75rem 1.25rem;
+
+            background-color: #e9ecef; /* Color de fondo más suave */
+
+            font-weight: 600;
+
+        }
+
+
+
+        .filter-title {
+
+            font-weight: bold;
+
+            color: #333;
+
+            font-size: 1.25rem; /* Título más grande */
+
+        }
+
+        /* Área de productos con scroll independiente */
+        .products-scroll-area {
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+            padding-right: 15px;
+        }
+
+        .sidebar-filter {
+            position: sticky;
+            top: 70px;
+            z-index: 100;
+            padding-bottom: 20px; /* Espacio para el final */
+        }
+
+        /* Estilo para los precios */
+        .price-original {
+            text-decoration: line-through;
+            color: #888;
+            margin-right: 5px;
+            font-size: 0.9rem;
+        }
+
+        .price-current {
+            font-weight: bold;
+            color: #007bff; /* Color primario de Bootstrap */
+            font-size: 1.1rem;
+        }
+
+        /* Estilo para el input de precio */
+        .price-input-group input {
+            height: calc(1.5em + .75rem + 2px); /* Altura consistente con bootstrap */
+        }
+    </style>
+
+</head>
+
+
+
+<body>
+
+    <div th:replace="fragments/navbar :: navbars"></div>
+
+    <div class="container mt-5">
+
+        <h1>Productos Disponibles</h1>
+
+        <div class="row">
+
+            <!-- COLUMNA DE FILTROS (3/12) - Sticky Filter -->
+
+            <div class="col-md-3">
+
+                <div class="sidebar-filter">
+
+                    <h3 class="mb-3 filter-title">Filtrar Productos</h3>
+
+                    <!-- Formulario de Filtro Dinámico (Checkboxes y Precio) -->
+
+                    <form th:action="@{/productos/filtrar}" method="GET" id="filterForm">
+
+                        <!-- Nivel 1: Categoría (Checkbox para selección múltiple) -->
+
+                        <div class="card mb-3">
+
+                            <div class="card-header" data-toggle="collapse" data-target="#collapseCategoria">
+                                <i class="fas fa-tags mr-2"></i> Categoría (Nivel 1)
+                            </div>
+
+                            <div id="collapseCategoria" class="collapse show">
+
+                                <div class="card-body">
+
+                                    <div class="form-check" th:each="cat : ${categoriasUnicas}">
+                                        <!-- CAMBIO CLAVE: Checkbox para selección múltiple -->
+                                        <input class="form-check-input" type="checkbox" name="categoria" th:id="'cat-' + ${cat}" th:value="${cat}"
+                                               th:checked="${#lists.contains(filtroCategoriasArray, cat)}">
+
+                                        <label class="form-check-label" th:for="'cat-' + ${cat}" th:text="${cat}"></label>
+
+                                    </div>
+                                    <div th:if="${categoriasUnicas.isEmpty()}" class="text-muted small">No hay categorías disponibles.</div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Nivel 2: Subcategoría 1 -->
+
+                        <div class="card mb-3">
+
+                            <div class="card-header" data-toggle="collapse" data-target="#collapseSub1">
+                                <i class="fas fa-layer-group mr-2"></i> Subcategoría 1 (Nivel 2)
+                            </div>
+
+                            <div id="collapseSub1" class="collapse">
+
+                                <div class="card-body">
+
+                                    <div class="form-check" th:each="sub1 : ${subcategorias1Unicas}">
+
+                                        <input class="form-check-input" type="checkbox" name="subcategoria1" th:id="'sub1-' + ${sub1}" th:value="${sub1}"
+                                               th:checked="${#lists.contains(filtroSub1Array, sub1)}">
+
+                                        <label class="form-check-label" th:for="'sub1-' + ${sub1}" th:text="${sub1}"></label>
+
+                                    </div>
+                                    <div th:if="${subcategorias1Unicas.isEmpty()}" class="text-muted small">No hay subcategorías 1 disponibles.</div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Nivel 3: Subcategoría 2 -->
+
+                        <div class="card mb-3">
+
+                            <div class="card-header" data-toggle="collapse" data-target="#collapseSub2">
+                                <i class="fas fa-cubes mr-2"></i> Subcategoría 2 (Nivel 3)
+                            </div>
+
+                            <div id="collapseSub2" class="collapse">
+
+                                <div class="card-body">
+
+                                    <div class="form-check" th:each="sub2 : ${subcategorias2Unicas}">
+
+                                        <input class="form-check-input" type="checkbox" name="subcategoria2" th:id="'sub2-' + ${sub2}" th:value="${sub2}"
+                                               th:checked="${#lists.contains(filtroSub2Array, sub2)}">
+
+                                        <label class="form-check-label" th:for="'sub2-' + ${sub2}" th:text="${sub2}"></label>
+
+                                    </div>
+                                    <div th:if="${subcategorias2Unicas.isEmpty()}" class="text-muted small">No hay subcategorías 2 disponibles.</div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- Nivel 4: Subcategoría 3 -->
+
+                        <div class="card mb-4">
+
+                            <div class="card-header" data-toggle="collapse" data-target="#collapseSub3">
+                                <i class="fas fa-sitemap mr-2"></i> Subcategoría 3 (Nivel 4)
+                            </div>
+
+                            <div id="collapseSub3" class="collapse">
+
+                                <div class="card-body">
+
+                                    <div class="form-check" th:each="sub3 : ${subcategorias3Unicas}">
+
+                                        <input class="form-check-input" type="checkbox" name="subcategoria3" th:id="'sub3-' + ${sub3}" th:value="${sub3}"
+                                               th:checked="${#lists.contains(filtroSub3Array, sub3)}">
+
+                                        <label class="form-check-label" th:for="'sub3-' + ${sub3}" th:text="${sub3}"></label>
+
+                                    </div>
+                                    <div th:if="${subcategorias3Unicas.isEmpty()}" class="text-muted small">No hay subcategorías 3 disponibles.</div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- NUEVO: FILTRO POR RANGO DE PRECIO -->
+                        <div class="card mb-4">
+                            <div class="card-header" data-toggle="collapse" data-target="#collapsePrecio">
+                                <i class="fas fa-dollar-sign mr-2"></i> Rango de Precio (S/)
+                            </div>
+                            <div id="collapsePrecio" class="collapse show">
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label for="precioMin" class="small text-muted mb-0">Precio Mínimo</label>
+                                        <input type="number" step="0.01" class="form-control price-input-group" id="precioMin" name="precioMin"
+                                               th:value="${filtroPrecioMin}" placeholder="0.00">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="precioMax" class="small text-muted mb-0">Precio Máximo</label>
+                                        <input type="number" step="0.01" class="form-control price-input-group" id="precioMax" name="precioMax"
+                                               th:value="${filtroPrecioMax}" placeholder="999.99">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- Botón para aplicar el filtro -->
+
+                        <button type="submit" class="btn btn-primary btn-block mb-2">Aplicar Filtros</button>
+
+                    </form>
+
+                    <div class="mt-2">
+
+                        <a th:href="@{/productos/listar}" class="btn btn-outline-secondary btn-block">Limpiar Filtros</a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- COLUMNA DE PRODUCTOS (9/12) - Área de scroll independiente -->
+
+            <div class="col-md-9">
+
+                <div class="products-scroll-area">
+
+                    <div th:if="${productos.isEmpty()}" class="alert alert-warning" role="alert">
+
+                        No se encontraron productos con los filtros seleccionados.
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-md-4 mb-4" th:each="p:${productos}">
+
+                            <div class="card product-card">
+
+								<img th:src="${p.imagenUrl != null ? p.imagenUrl : '/images/no-disponible.png'}"
+								     class="card-img-top"
+								     th:alt="${p.nombre}">
+
+                                <div class="card-body d-flex flex-column">
+
+                                    <h5 class="card-title" th:text="${p.nombre}">Nombre del Producto</h5>
+
+
+                                    <!-- Lógica de Precios y Ofertas -->
+                                    <div class="price-container mb-2">
+
+                                        <div th:if="${p.precioOferta != null}" class="d-flex align-items-center">
+
+                                            <p class="card-text mb-0 price-original">
+                                                <span th:text="'S/ ' + ${#numbers.formatDecimal(p.precio, 1, 2)}">S/ 0.00</span>
+                                            </p>
+
+                                            <p class="card-text mb-0 price-current" th:text="'S/ ' + ${#numbers.formatDecimal(p.precioOferta, 1, 2)}">S/ 0.00</p>
+
+                                            <span class="badge badge-danger ml-2" th:text="${T(java.lang.Math).round((1 - p.precioOferta / p.precio) * 100)} + '% OFF'">% OFF</span>
+
+                                        </div>
+
+                                        <div th:unless="${p.precioOferta != null}">
+                                            <p class="card-text mb-0 price-current" th:text="'S/ ' + ${#numbers.formatDecimal(p.precio, 1, 2)}">S/ 0.00</p>
+                                        </div>
+                                    </div>
+
+                                    <a th:href="@{/productos/detalles/{id}(id=${p.id})}" class="btn btn-danger btn-sm">Ver Detalles</a>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+
+
+        </div>
+
+    </div>
+
+
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+
+
+
+    <!-- Se elimina la lógica JavaScript de ocultar/mostrar niveles,
+         ya que el filtro ahora es de selección múltiple (checkboxes) y no jerárquico. -->
+    <script>
+        // No se requiere lógica JS compleja. La lógica de filtrado ocurre en el backend.
+    </script>
+
+</body>
+</html>
+																																																																																																																																		/html>

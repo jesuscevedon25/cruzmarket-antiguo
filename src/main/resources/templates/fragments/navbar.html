@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+		crossorigin="anonymous">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+		crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+	<link rel="stylesheet" th:href="@{/css/style.css}">
+
+
+	<title>Barra de Navegación</title>
+
+	<style>
+		/* Estilos para el contenedor de búsqueda y los resultados */
+		.search-container {
+			position: relative;
+		}
+
+		@media (min-width: 1200px) {
+			.container {
+				max-width: 80%;
+			}
+		}
+
+
+		.search-results {
+			position: absolute;
+			top: 100%;
+			left: 0;
+			width: 100%;
+			max-width: 300px;
+			/* Ajusta este valor si es necesario */
+			background-color: white;
+			border: 1px solid #ccc;
+			border-top: none;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+			z-index: 1000;
+			display: none;
+			/* Oculto por defecto */
+		}
+
+		.search-results a {
+			display: flex;
+			align-items: center;
+			padding: 8px 10px;
+			text-decoration: none;
+			color: #333;
+			border-bottom: 1px solid #eee;
+		}
+
+		.search-results a:hover {
+			background-color: #f0f0f0;
+		}
+
+		.search-results a img {
+			width: 40px;
+			height: 40px;
+			object-fit: cover;
+			margin-right: 10px;
+			border-radius: 4px;
+		}
+
+		.search-results a .details {
+			display: flex;
+			flex-direction: column;
+		}
+
+		.search-results a .title {
+			font-weight: bold;
+		}
+
+		.search-results a .price {
+			font-size: 0.9em;
+			color: #888;
+		}
+	</style>
+
+</head>
+
+<body>
+	<div th:fragment="navbars">
+		<nav class="top-navbar d-none d-lg-block">
+			<div class="container">
+				<div class="d-flex justify-content-between align-items-center">
+					<div class="social-icons">
+						<a href="#"><i class="fab fa-facebook-f"></i></a>
+						<a href="#"><i class="fab fa-twitter"></i></a>
+						<a href="#"><i class="fab fa-instagram"></i></a>
+					</div>
+					<div class="user-options">
+						<a href="#" id="myAccountLink"><i class="fas fa-user"></i> Mi Cuenta</a>
+						<a th:href="@{/favoritos/listar}" class="btn btn-outline-danger">
+							<i class="fas fa-heart"></i> Favoritos
+						</a>
+						<a th:href="@{/compras/carrito}"><i class="fas fa-shopping-cart"></i> Carrito</a>
+					</div>
+
+					<script>
+						// Obtener el enlace del DOM por su ID
+						const myAccountLink = document.getElementById('myAccountLink');
+
+						// Escuchar el evento de clic en el enlace
+						myAccountLink.addEventListener('click', function (event) {
+							event.preventDefault(); // Previene la acción por defecto del enlace
+
+							// Comprueba si existe un token en el almacenamiento local
+							const token = localStorage.getItem('token');
+
+							if (token) {
+								// Si el token existe, el usuario ya ha iniciado sesión
+								// Redirige a la página de perfil
+								window.location.href = '/clientes/perfil';
+							} else {
+								// Si no hay token, el usuario no ha iniciado sesión
+								// Redirige a la página de login
+								window.location.href = '/clientes/login';
+							}
+						});
+					</script>
+				</div>
+			</div>
+		</nav>
+		<nav class="main-navbar navbar navbar-expand-lg">
+			<div class="container">
+				<a class="navbar-brand" th:href="@{/}">
+					<i class="fas fa-truck"></i> Cruz Market
+				</a>
+				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbarContent"
+					aria-controls="mainNavbarContent" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="mainNavbarContent">
+					<ul class="navbar-nav mr-auto">
+						<!-- Menús de Categoría Principal con Enlaces Directos -->
+						<li class="nav-item">
+							<a class="nav-link" th:href="@{/productos/categoria/Ropa}">
+								ROPA
+							</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" th:href="@{/productos/categoria/Calzado}">
+								CALZADO
+							</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" th:href="@{/productos/categoria/Coleccionables}">
+								COLECCIONABLES
+							</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" th:href="@{/productos/categoria/Mangas}">
+								MANGAS
+							</a>
+						</li>
+						<!-- 🚀 MODIFICACIÓN CLAVE: ENLACE PARA OFERTAS -->
+						<li class="nav-item">
+							<a class="nav-link" th:href="@{/productos/filtrar(tipo='oferta')}"
+								style="color: #FF0000; font-weight: bold;">
+								OFERTAS
+							</a>
+						</li>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" th:href="@{/productos/categoria/Electronicos}">
+								ELECTRONICOS
+							</a>
+						</li>
+						<!-- Puedes añadir más categorías aquí según las necesites -->
+					</ul>
+
+
+
+					<form class="form-inline my-2 my-lg-0 ml-auto" id="search-form" method="get"
+						action="/productos/buscar">
+						<div class="search-container">
+							<input class="form-control mr-sm-2" type="search" placeholder="¿Qué estás buscando?"
+								aria-label="Search" name="nombre" id="search-input">
+							<div class="search-results" id="search-results">
+							</div>
+						</div>
+						<button class="btn btn-outline-success my-2 my-sm-0" type="submit"><i
+								class="fas fa-search"></i></button>
+					</form>
+
+				</div>
+			</div>
+		</nav>
+	</div>
+</body>
+
+
+<script>
+	const searchInput = document.getElementById('search-input');
+	const searchResults = document.getElementById('search-results');
+
+	searchInput.addEventListener('input', function () {
+		const query = this.value;
+		// Solo buscar si la longitud de la consulta es mayor que 2 para reducir peticiones
+		if (query.length > 2) {
+			// Llama al controlador que devuelve JSON
+			fetch(`/productos/buscar-json?nombre=${query}`)
+				.then(response => response.json())
+				.then(data => {
+					searchResults.innerHTML = ''; // Limpiar resultados anteriores
+
+					// 🚀 MODIFICACIÓN CLAVE: Lógica para mostrar resultados o el mensaje
+					if (data.length > 0) {
+						// Hay productos, mostrar cada uno
+						data.forEach(producto => {
+							const resultItem = document.createElement('a');
+							resultItem.href = `/productos/detalles/${producto.id}`;
+							resultItem.innerHTML = `
+                                <img src="${producto.imagenUrl}" alt="${producto.nombre}">
+                                <div class="details">
+                                    <span class="title">${producto.nombre}</span>
+                                    <span class="price">S/ ${producto.precio}</span>
+                                </div>
+                            `;
+							searchResults.appendChild(resultItem);
+						});
+						// Mostrar el contenedor de resultados
+						searchResults.style.display = 'block';
+					} else {
+						// 🛑 NO hay productos, mostrar el mensaje "No hay producto"
+						const noResultItem = document.createElement('div');
+						noResultItem.classList.add('p-2', 'text-center', 'text-muted'); // Añadir clases de Bootstrap para estilo
+						// Estilo adicional para el mensaje, asegurando que se muestre como un elemento de resultado
+                        noResultItem.style.padding = '8px 10px';
+                        noResultItem.style.fontWeight = 'bold';
+                        noResultItem.style.color = '#dc3545'; // Color rojo de advertencia
+						noResultItem.style.borderBottom = '1px solid #eee';
+                        noResultItem.textContent = 'No hay productos encontrados.';
+
+						searchResults.appendChild(noResultItem);
+                        // Mostrar el contenedor para que se vea el mensaje
+                        searchResults.style.display = 'block';
+					}
+				})
+				.catch(error => {
+                    console.error('Error en la búsqueda:', error);
+                    searchResults.innerHTML = ''; // Limpiar
+                    searchResults.style.display = 'none'; // Ocultar en caso de error
+                });
+		} else {
+            // Ocultar resultados si la consulta es muy corta o vacía
+			searchResults.style.display = 'none';
+		}
+	});
+
+	// Ocultar resultados al hacer clic fuera del área de búsqueda
+	document.addEventListener('click', function (e) {
+		if (!e.target.closest('.search-container')) {
+			searchResults.style.display = 'none';
+		}
+	});
+</script>
+
+
+
+
+</html>

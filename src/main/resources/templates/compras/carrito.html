@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Compras</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .cart-container {
+            margin-top: 50px;
+            margin-bottom: 50px;
+        }
+        .cart-item {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            padding: 15px 0;
+        }
+        .cart-item-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-right: 15px;
+        }
+        .item-details {
+            flex-grow: 1;
+        }
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+        }
+
+		@media (min-width: 1200px) {
+				    .container {
+				        max-width: 80%;
+				    }
+				}
+
+
+        .quantity-controls input {
+            width: 50px;
+            text-align: center;
+            margin: 0 5px;
+        }
+        .cart-totals {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .cart-totals h5 {
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .cart-actions {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+	<div th:replace="fragments/navbar :: navbars"></div>
+    <div class="container cart-container">
+        <div class="row">
+            <div class="col-md-8">
+                <div id="cartItemsContainer">
+                    <p>Cargando carrito...</p>
+                </div>
+
+                <div class="input-group mt-4">
+                    <input type="text" class="form-control" placeholder="Código de cupón" aria-label="Código de cupón">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button">Aplicar Cupón</button>
+                    </div>
+                </div>
+
+                <div class="cart-actions d-flex justify-content-between align-items-center mt-3">
+                    <a href="/productos/listar" class="btn btn-secondary">Seguir Comprando</a>
+                    <button class="btn btn-primary" id="updateCartBtn">Actualizar Carrito</button>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="cart-totals">
+                    <h5>TOTALES DEL CARRITO</h5>
+                    <ul class="list-unstyled">
+                        <li class="d-flex justify-content-between">
+                            <span>Subtotal</span>
+                            <span id="subtotalPrice">S/0.00</span>
+                        </li>
+                        <li class="d-flex justify-content-between">
+                            <span>Envío</span>
+                            <span>Los Costes De Envío Se Calculan Al Finalizar Compra.</span>
+                        </li>
+                        <hr>
+                        <li class="d-flex justify-content-between font-weight-bold">
+                            <span>Total</span>
+                            <span id="totalPrice">S/0.00</span>
+                        </li>
+                    </ul>
+					<a href="/compras/checkout" class="btn btn-danger btn-block mt-3" id="checkoutBtn">INICIAR COMPRA</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+	<script>
+			const API_BASE_URL = 'http://localhost:8088/';
+			    const token = localStorage.getItem('token');
+			    const userId = localStorage.getItem('userId');
+
+			    document.addEventListener('DOMContentLoaded', () => {
+			        // Ejecuta el renderizado al cargar la página
+			        renderCart();
+			    });
+
+			    // Actualiza la visualización de los precios totales
+			    function updateTotalsDisplay(totalPrice) {
+			        document.getElementById('subtotalPrice').textContent = `S/${totalPrice.toFixed(2)}`;
+			        document.getElementById('totalPrice').textContent = `S/${totalPrice.toFixed(2)}`;
+			    }
+
+			    // Función para renderizar el carrito (Obtener y Mostrar)
+			    async function renderCart() {
+			        const cartItemsContainer = document.getElementById('cartItemsContainer');
+
+			        cartItemsContainer.innerHTML = '<p>Cargando carrito...</p>';
+			        if (!userId) {
+			            cartItemsContainer.innerHTML = '<p>Por favor, inicia sesión para ver tu carrito.</p>';
+			            updateTotalsDisplay(0);
+			            return;
+			        }
+
+			        try {
+			            const response = await fetch(`${API_BASE_URL}api/v1/carrito/cliente/${userId}`, {
+			                headers: {
+			                    'Authorization': `Bearer ${token}`
+			                }
+			            });
+
+			            if (response.ok) {
+			                const cartData = await response.json();
+			                cartItemsContainer.innerHTML = ''; // Limpia el contenedor
+
+			                // **CORRECCIÓN VITAL: USAR 'detalles'**
+			                if (cartData.detalles && cartData.detalles.length > 0) {
+								cartData.detalles.forEach(item => {
+								    const subtotal = item.precioUnitario * item.cantidad;
+
+								    // 🟢 CORRECCIÓN DE VISUALIZACIÓN: Usamos 'item.talla' (nombre probable del campo)
+								    const talla = item.talla || 'N/A'; // Usar 'N/A' si no existe
+
+								    const itemHtml = `
+								        <div class="cart-item">
+								            <button class="btn btn-sm btn-outline-danger mr-2" onclick="removeItem(${item.id})">
+								                <i class="fas fa-times"></i>
+								            </button>
+								            <img src="${item.producto.imagenUrl || 'URL_IMAGEN_POR_DEFECTO'}" alt="${item.producto.nombre}" class="cart-item-image">
+								            <div class="item-details">
+								                <h5>${item.producto.nombre}</h5>
+								                <p class="mb-0">Talla: <strong>${talla}</strong></p> <span>S/${item.precioUnitario.toFixed(2)}</span>
+								            </div>
+								            <div class="quantity-controls">
+								                <button class="btn btn-sm btn-outline-secondary" onclick="changeQuantity(${item.producto.id}, '${talla}', -1)">-</button>
+								                <input type="number" value="${item.cantidad}" min="1" readonly>
+								                <button class="btn btn-sm btn-outline-secondary" onclick="changeQuantity(${item.producto.id}, '${talla}', 1)">+</button>
+								            </div>
+								            <div class="ml-auto font-weight-bold">S/${subtotal.toFixed(2)}</div>
+								        </div>
+								    `;
+								    cartItemsContainer.innerHTML += itemHtml;
+								});
+
+			                } else {
+			                    cartItemsContainer.innerHTML = '<p>Tu carrito está vacío.</p>';
+			                }
+
+			                updateTotalsDisplay(cartData.precioTotal || 0);
+
+			            } else if (response.status === 404) {
+			                // Si el carrito no existe o no es activo
+			                cartItemsContainer.innerHTML = '<p>Tu carrito está vacío.</p>';
+			                updateTotalsDisplay(0);
+			            } else {
+			                const errorMsg = await response.text();
+			                alert('Error al obtener el carrito: ' + errorMsg);
+			            }
+			        } catch (error) {
+			            console.error('Error en la conexión:', error);
+			            alert('Ocurrió un error al conectar con el servidor.');
+			        }
+			    }
+
+			    // Elimina un producto del carrito
+			    async function removeItem(cartItemId) {
+			        if (!userId || !token) {
+			            alert('Debes iniciar sesión para eliminar productos del carrito.');
+			            window.location.href = '/clientes/login';
+			            return;
+			        }
+
+			        if (!confirm("¿Estás seguro de que quieres eliminar este producto del carrito?")) {
+			            return;
+			        }
+
+			        try {
+			            // Endpoint DELETE: Usa el endpoint seguro que requiere clienteId y detalleId
+			            const response = await fetch(`${API_BASE_URL}api/v1/carrito/item/${userId}/${cartItemId}`, {
+			                method: 'DELETE',
+			                headers: { 'Authorization': `Bearer ${token}` }
+			            });
+
+			            if (response.ok) {
+			                renderCart(); // Recargar el carrito para ver los cambios
+			            } else {
+			                const errorMsg = await response.text();
+			                alert('Error al eliminar el producto: ' + errorMsg);
+			            }
+			        } catch (error) {
+			            console.error('Error en la conexión:', error);
+			            alert('Ocurrió un error al conectar con el servidor.');
+			        }
+			    }
+
+
+				// 🟢 CORRECCIÓN DE LA URL: Se añade el quinto parámetro para evitar el 404
+				async function changeQuantity(productoId, talla, change) {
+				    if (!userId || !token) {
+				        alert('Debes iniciar sesión para actualizar el carrito.');
+				        window.location.href = '/clientes/login';
+				        return;
+				    }
+
+				    // 🛑 CAMBIO CLAVE: Añadir el valor '1' extra ('accionExtra') para que la URL tenga 5 segmentos.
+				    const accionExtra = 1;
+
+				    try {
+				        // URL generada: /agregar/{userId}/{productoId}/{talla}/{change}/1
+				        const url = `${API_BASE_URL}api/v1/carrito/agregar/${userId}/${productoId}/${talla}/${change}/${accionExtra}`;
+
+				        const response = await fetch(url, {
+				            method: 'POST', // Usamos POST.
+				            headers: { 'Authorization': `Bearer ${token}` }
+				        });
+
+				        if (response.ok) {
+				            renderCart(); // Recargar el carrito para ver los cambios
+				        } else {
+				            const errorMsg = await response.text();
+				            // Muestra el mensaje de error del backend (ej. "Stock insuficiente")
+				            alert('Error al actualizar la cantidad: ' + errorMsg);
+				        }
+				    } catch (error) {
+				        console.error('Error en la conexión:', error);
+				        alert('Ocurrió un error al conectar con el servidor.');
+				    }
+				}
+
+	    </script>
+
+    </script>
+	<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Mi Perfil</title>
+	<style>
+		body {
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+			background-color: #eef2f5;
+			margin: 0;
+			padding: 20px;
+		}
+
+		.container {
+			max-width: 1200px;
+			margin: 40px auto;
+			padding: 0 20px;
+			display: flex;
+			gap: 30px;
+		}
+
+		.profile-sidebar {
+			flex-basis: 300px;
+			background-color: #fff;
+			padding: 30px;
+			border-radius: 12px;
+			box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+			text-align: center;
+		}
+
+		.profile-sidebar img {
+			width: 120px;
+			height: 120px;
+			border-radius: 50%;
+			object-fit: cover;
+			margin-bottom: 20px;
+			border: 4px solid #fff;
+			box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+		}
+
+		.profile-sidebar h2 {
+			font-size: 24px;
+			margin-bottom: 5px;
+			color: #333;
+		}
+
+		.profile-sidebar p {
+			color: #777;
+			font-size: 14px;
+			line-height: 1.6;
+		}
+
+		.profile-content {
+			flex-grow: 1;
+			display: flex;
+			flex-direction: column;
+			gap: 30px;
+		}
+
+		.card {
+			background-color: #fff;
+			padding: 25px;
+			border-radius: 12px;
+			box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+		}
+
+		.card h3 {
+			font-size: 20px;
+			color: #333;
+			border-bottom: 2px solid #f0f0f0;
+			padding-bottom: 15px;
+			margin-bottom: 15px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.card p {
+			margin: 8px 0;
+			color: #555;
+		}
+
+		.info-section p strong {
+			color: #333;
+			min-width: 120px;
+			display: inline-block;
+		}
+
+		.info-section .btn-editar {
+			padding: 8px 15px;
+			border: none;
+			border-radius: 6px;
+			background-color: #007bff;
+			color: #fff;
+			cursor: pointer;
+			font-size: 14px;
+		}
+
+		.btn-cerrar-sesion,
+		.btn-regresar,
+		.btn-finalizar-compra,
+		.btn-verify-admin {
+			padding: 12px 25px;
+			border: none;
+			border-radius: 8px;
+			cursor: pointer;
+			color: #fff;
+			font-size: 16px;
+			font-weight: 600;
+			margin-top: 20px;
+			transition: background-color 0.3s;
+		}
+
+		.btn-regresar {
+			background-color: #6c757d;
+		}
+
+		.btn-cerrar-sesion {
+			background-color: #dc3545;
+		}
+
+		.btn-finalizar-compra {
+			background-color: #28a745;
+		}
+
+		.btn-verify-admin {
+			/* Estilo para el botón de verificar estado en VERIFICACION */
+			background-color: #17a2b8;
+			margin-top: 5px;
+			padding: 8px 15px;
+			font-size: 14px;
+		}
+
+
+		.history-item,
+		.cart-item {
+			border: 1px solid #f0f0f0;
+			padding: 15px;
+			border-radius: 8px;
+			margin-bottom: 15px;
+			transition: box-shadow 0.3s;
+		}
+
+		.history-item:hover,
+		.cart-item:hover {
+			box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+		}
+
+		/* Estilos para estados de carrito */
+		.text-success strong {
+			color: #28a745;
+		}
+
+		.text-primary strong {
+			color: #007bff;
+		}
+
+		.text-info strong {
+			color: #17a2b8;
+		}
+
+		.text-danger strong {
+			color: #dc3545;
+		}
+
+		.text-warning strong {
+			color: #ffc107;
+		}
+
+
+		.history-item strong {
+			color: #007bff;
+		}
+
+		.history-item small {
+			color: #999;
+		}
+
+		.edit-form {
+			margin-top: 20px;
+		}
+
+		.edit-form label {
+			display: block;
+			margin-bottom: 5px;
+			font-weight: bold;
+			color: #555;
+		}
+
+		.edit-form input {
+			width: 100%;
+			padding: 10px;
+			margin-bottom: 15px;
+			border: 1px solid #ccc;
+			border-radius: 6px;
+			box-sizing: border-box;
+		}
+
+		.edit-form .btn-guardar {
+			background-color: #28a745;
+			color: #fff;
+			border: none;
+			padding: 10px 20px;
+			border-radius: 6px;
+			cursor: pointer;
+		}
+
+		/* 🛑 ESTILOS PARA EL MODAL PERSONALIZADO (AZUL OSCURO) 🛑 */
+		.modal-custom {
+			display: none;
+			position: fixed;
+			z-index: 1000;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			overflow: auto;
+			background-color: rgba(0, 0, 0, 0.6);
+			backdrop-filter: blur(3px);
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+
+		.modal-custom-content {
+			background-color: #ffffff;
+			margin: auto;
+			padding: 30px;
+			border-radius: 12px;
+			box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+			max-width: 450px;
+			width: 90%;
+			text-align: center;
+			position: relative;
+			animation: fadeIn 0.3s ease-out;
+		}
+
+		@keyframes fadeIn {
+			from {
+				opacity: 0;
+				transform: translateY(-20px);
+			}
+
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		.close-button-custom {
+			color: #aaaaaa;
+			font-size: 28px;
+			font-weight: bold;
+			position: absolute;
+			top: 10px;
+			right: 20px;
+			cursor: pointer;
+			transition: color 0.3s;
+		}
+
+		.close-button-custom:hover,
+		.close-button-custom:focus {
+			color: #333333;
+			text-decoration: none;
+			cursor: pointer;
+		}
+
+		.modal-custom-header {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin-bottom: 20px;
+			border-bottom: 2px solid #e0e0e0;
+			padding-bottom: 15px;
+		}
+
+		.modal-custom-icon {
+			font-size: 3em;
+			line-height: 1;
+			margin-right: 15px;
+			color: #ffc107;
+			/* Color amarillo para el icono de advertencia */
+		}
+
+		.modal-custom-header h2 {
+			color: #0056b3;
+			/* Azul oscuro para el título */
+			margin: 0;
+			font-size: 26px;
+		}
+
+		#modalCustomMessage {
+			color: #444444;
+			line-height: 1.6;
+			margin-bottom: 30px;
+			font-size: 16px;
+			text-align: left;
+			/* Alineamos a la izquierda el mensaje para mejor lectura */
+		}
+
+		.modal-custom-button {
+			background-color: #007bff;
+			/* Azul vibrante para el botón */
+			color: white;
+			padding: 12px 30px;
+			border: none;
+			border-radius: 8px;
+			cursor: pointer;
+			font-size: 17px;
+			font-weight: 600;
+			transition: background-color 0.3s ease;
+		}
+
+		.modal-custom-button:hover {
+			background-color: #0056b3;
+			/* Azul oscuro al pasar el ratón */
+		}
+
+		/* 🟢 CÓDIGO AÑADIDO PARA EL SCROLL INTERNO 🟢 */
+		#allCartsList,
+		#purchaseHistory {
+			max-height: 400px;
+			/* Altura máxima del contenedor (ajusta según necesites) */
+			overflow-y: auto;
+			/* Muestra la barra de scroll vertical si el contenido excede la altura */
+			padding-right: 15px;
+			/* Evita que el contenido se pegue a la barra de scroll */
+		}
+
+		/* Opcional: Estilo para la barra de scroll (Webkit, Chrome, Safari) */
+		#allCartsList::-webkit-scrollbar,
+		#purchaseHistory::-webkit-scrollbar {
+			width: 8px;
+		}
+
+		#allCartsList::-webkit-scrollbar-track,
+		#purchaseHistory::-webkit-scrollbar-track {
+			background: #f0f0f0;
+			border-radius: 10px;
+		}
+
+		#allCartsList::-webkit-scrollbar-thumb,
+		#purchaseHistory::-webkit-scrollbar-thumb {
+			background: #ccc;
+			border-radius: 10px;
+		}
+
+		#allCartsList::-webkit-scrollbar-thumb:hover,
+		#purchaseHistory::-webkit-scrollbar-thumb:hover {
+			background: #a0a0a0;
+		}
+
+		/* 🟢 FIN CÓDIGO AÑADIDO PARA EL SCROLL INTERNO 🟢 */
+	</style>
+</head>
+
+<body>
+	<div class="container">
+		<div class="profile-sidebar">
+			<img src="https://i.ibb.co/5cQvGzC/profile-avatar.png" alt="Avatar de usuario">
+			<h2><span id="userName">Cliente</span></h2>
+			<p><span id="userEmail"></span></p>
+			<p>Mi Perfil - CruzMarket</p>
+			<div>
+				<button id="backBtn" class="btn-regresar">Regresar</button>
+			</div>
+			<div>
+				<button id="logoutBtn" class="btn-cerrar-sesion">Cerrar Sesión</button>
+			</div>
+		</div>
+
+		<div class="profile-content">
+			<div class="card info-section">
+				<h3>Mi Información
+					<button id="editBtn" class="btn-editar">Editar</button>
+				</h3>
+				<p><strong>DNI:</strong> <span id="userDni"></span></p>
+				<p><strong>Teléfono:</strong> <span id="userPhone"></span></p>
+				<p><strong>Dirección:</strong> <span id="userAddress"></span></p>
+				<p><strong>Fecha de Registro:</strong> <span id="userRegDate"></span></p>
+
+				<form id="editForm" class="edit-form" style="display:none;">
+					<label for="dniInput">DNI:</label>
+					<input type="text" id="dniInput" name="dni"
+						oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+					<label for="phoneInput">Teléfono:</label>
+					<input type="text" id="phoneInput" name="telefono"
+						oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+					<label for="addressInput">Dirección:</label>
+					<input type="text" id="addressInput" name="direccion">
+					<button type="submit" class="btn-guardar">Guardar Cambios</button>
+				</form>
+			</div>
+
+			<div class="card cart-section">
+				<h3>Historial de Órdenes (Carritos)</h3>
+				<div id="allCartsList">
+					<p>Cargando historial de órdenes...</p>
+				</div>
+			</div>
+			<div class="card print-section">
+				<h3>Imprimir Boleta por Número</h3>
+				<div style="display: flex; gap: 10px; align-items: center;">
+					<label for="boletaNumberInput" style="font-weight: bold; color: #555; white-space: nowrap;">Boleta
+						N°:</label>
+					<input type="number" id="boletaNumberInput" placeholder="Ej: 1"
+						style="flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; max-width: 150px;">
+					<button id="printBoletaBtn" class="btn-editar" style="background-color: #007bff;">Imprimir
+						Boleta</button>
+				</div>
+			</div>
+
+			<div class="card history-section">
+				<h3>Historial de Boletas (Completadas)</h3>
+				<div id="purchaseHistory">
+					<p>No hay compras registradas.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="customErrorModal" class="modal-custom" style="display:none;">
+		<div class="modal-custom-content">
+			<span class="close-button-custom">&times;</span>
+			<div class="modal-custom-header">
+				<div class="modal-custom-icon">⚠️</div>
+				<h2 id="modalCustomTitle">Error de Verificación</h2>
+			</div>
+			<p id="modalCustomMessage">Ha ocurrido un error inesperado.</p>
+			<button class="modal-custom-button" onclick="closeCustomModal()">Aceptar</button>
+		</div>
+	</div>
+
+	<div id="boletaPDFContent" style="position: absolute; left: -9999px; width: 80mm; padding: 10px; background-color: white;">
+	    <div style="text-align: center; border: 1px solid black; padding: 10px; font-family: sans-serif;">
+	        <h2 style="margin: 0; font-size: 16px;">CRUZMARKET</h2>
+	        <p style="margin: 5px 0 0 0; font-size: 10px;">Av. Ejemplo #123 - Ciudad</p>
+	        <p style="margin: 0; font-size: 10px;">RUC: 2056XXXXXX</p>
+	        <h4 style="margin: 5px 0 10px 0; font-size: 11px;">RÉGIMEN: NUEVO RUS</h4>
+
+	        <h3 style="margin: 0; font-size: 14px; border-top: 1px dashed black; padding-top: 5px;">BOLETA DE VENTA</h3>
+	        <p style="margin: 5px 0; font-size: 12px;">N°: <strong id="pdf_boleta_numero">000000</strong></p>
+	        <p style="margin: 5px 0; font-size: 10px;">Fecha: <span id="pdf_fecha_emision">DD/MM/AAAA</span></p>
+	        <p style="margin: 5px 0; font-size: 10px;">Cliente: <span id="pdf_cliente_nombre">---</span></p>
+	        <p style="margin: 5px 0; font-size: 10px;">DNI: <span id="pdf_cliente_dni">---</span></p>
+
+	        <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px;">
+	            <thead>
+	                <tr style="border-top: 1px dashed black; border-bottom: 1px dashed black;">
+	                    <th style="text-align: left; padding: 5px 0;">Cant.</th>
+	                    <th style="text-align: left; padding: 5px 0;">Descripción</th>
+	                    <th style="text-align: right; padding: 5px 0;">Total</th>
+	                </tr>
+	            </thead>
+	            <tbody id="pdf_items_detalle">
+	                </tbody>
+	        </table>
+
+	        <div style="text-align: right; border-top: 1px dashed black; padding-top: 5px; margin-top: 5px; font-size: 12px;">
+	            <p style="margin: 2px 0;">TOTAL S/ <strong id="pdf_total">0.00</strong></p>
+	        </div>
+
+	        <p style="margin-top: 15px; font-size: 9px; border-top: 1px dashed black; padding-top: 5px;">
+	            "ESTE COMPROBANTE NO PERMITE CRÉDITO FISCAL"
+	        </p>
+	        <p style="margin-top: 5px; font-size: 9px;">¡Gracias por su compra!</p>
+	    </div>
+	</div>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+	<script>
+
+		// NUEVA VARIABLE GLOBAL: Almacena los datos completos de las facturas para impresión
+		let storedFacturasData = {};
+		// La ruta base debe apuntar a la raíz de la API, no al auth
+		const API_BASE_URL = '/api/v1/auth';
+		const token = localStorage.getItem('token');
+		const userId = localStorage.getItem('userId');
+
+		// 🛑 Referencias al modal y sus elementos (AÑADIDO) 🛑
+		const customErrorModal = document.getElementById('customErrorModal');
+		const modalCustomTitle = document.getElementById('modalCustomTitle');
+		const modalCustomMessage = document.getElementById('modalCustomMessage');
+		const closeButtonCustom = document.querySelector('.close-button-custom');
+
+		// Función para abrir el modal personalizado (AÑADIDO)
+		function openCustomModal(title, message) {
+			modalCustomTitle.textContent = title;
+			// Reemplazamos saltos de línea y formateamos el mensaje para que se vea claro en el modal.
+			modalCustomMessage.innerHTML = message.replace(/\n/g, '<br>').replace(/Error de verificación:/, '<strong>Error de Verificación:</strong>');
+			customErrorModal.style.display = 'flex';
+		}
+
+		// Función para cerrar el modal personalizado (AÑADIDO)
+		function closeCustomModal() {
+			customErrorModal.style.display = 'none';
+		}
+
+		// Event listeners para cerrar el modal (AÑADIDO)
+		closeButtonCustom.addEventListener('click', closeCustomModal);
+		window.addEventListener('click', (event) => {
+			if (event.target === customErrorModal) {
+				closeCustomModal();
+			}
+		});
+		// 🛑 FIN FUNCIONES DE MODAL 🛑
+
+		// 🛑 NUEVA VARIABLE GLOBAL: Almacena los IDs de carrito cuya Factura SÍ se ha ENTREGADO
+		let deliveredCartIds = new Set();
+
+		// Validación al cargar la página: Si no hay token, redirige y evita el historial.
+		if (!token || !userId) {
+			window.location.replace('/clientes/login');
+		}
+
+
+		function sanitizeNumber(value) {
+			if (value === null || value === undefined) {
+				return 'No especificado';
+			}
+			// Convertir a String si no lo es
+			const strValue = String(value);
+
+			// Eliminar cualquier caracter que NO sea un dígito (0-9)
+			const sanitized = strValue.replace(/[^0-9]/g, '');
+
+			// Si la cadena resultante está vacía, o si la cadena original estaba vacía o nula,
+			// devolvemos "No especificado".
+			if (sanitized.length === 0) {
+				return 'No especificado';
+			}
+
+			return sanitized;
+		}
+
+
+
+		async function loadUserInfo() {
+			try {
+				const response = await fetch(`${API_BASE_URL}/clientes/${userId}`, {
+					headers: {'Authorization': `Bearer ${token}`}
+				});
+				if (response.ok) {
+					const userData = await response.json();
+					// 🛑 CONCATENACIÓN DEL NOMBRE COMPLETO AQUÍ PARA EL PERFIL 🛑
+					const nombreCompleto = `${userData.nombre || ''} ${userData.apellido || ''}`.trim();
+					document.getElementById('userName').textContent = nombreCompleto || 'Cliente';
+					document.getElementById('userEmail').textContent = userData.email;
+
+					// 🛑 CAMBIO: Aplicar sanitización para aceptar SOLO números 🛑
+					document.getElementById('userDni').textContent = sanitizeNumber(userData.dni);
+					document.getElementById('userPhone').textContent = sanitizeNumber(userData.telefono);
+					// 🛑 FIN DEL CAMBIO 🛑
+
+					document.getElementById('userAddress').textContent = userData.direccion || 'No especificado';
+					const regDate = new Date(userData.fechaRegistro);
+					document.getElementById('userRegDate').textContent = regDate.toLocaleDateString();
+				} else {
+					console.error('Error al cargar la información del usuario');
+					// 🛑 Reemplazo de alert() por modal 🛑
+					openCustomModal('Error de Carga', 'No se pudo cargar tu información. Por favor, inicia sesión de nuevo.');
+					// alert('No se pudo cargar tu información. Por favor, inicia sesión de nuevo.');
+					window.location.replace('/clientes/login');
+				}
+			} catch (error) {
+				console.error('Error en la conexión:', error);
+				// 🛑 Reemplazo de alert() por modal 🛑
+				openCustomModal('Error de Red', 'Ocurrió un error al conectar con el servidor.');
+				// alert('Ocurrió un error al conectar con el servidor.');
+			}
+		}
+
+
+
+		async function updateUserInfo() {
+			try {
+				const dni = document.getElementById('dniInput').value.trim();
+				const direccion = document.getElementById('addressInput').value;
+				const telefono = document.getElementById('phoneInput').value.trim();
+
+				// 🛑 VALIDACIÓN DE NÚMEROS: Si no está vacío, debe ser SOLO dígitos 🛑
+				const numberRegex = /^\d+$/;
+
+				if (dni.length > 0 && !numberRegex.test(dni)) {
+					openCustomModal('Error de Formato', 'El campo DNI solo debe contener números (dígitos). Por favor, corrija el valor.');
+					return; // Detiene el envío
+				}
+
+				if (telefono.length > 0 && !numberRegex.test(telefono)) {
+					openCustomModal('Error de Formato', 'El campo Teléfono solo debe contener números (dígitos). Por favor, corrija el valor.');
+					return; // Detiene el envío
+				}
+				// 🛑 FIN VALIDACIÓN 🛑
+
+				const response = await fetch(`${API_BASE_URL}/clientes/${userId}`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${token}`
+					},
+					body: JSON.stringify({dni: dni, direccion: direccion, telefono: telefono})
+				});
+
+				if (response.ok) {
+					openCustomModal('Actualización Exitosa', 'Información actualizada con éxito.');
+
+					// Usamos sanitizeNumber para limpiar los datos antes de mostrarlos, aunque la validación previa ya los limpió.
+					document.getElementById('userDni').textContent = sanitizeNumber(dni);
+					document.getElementById('userAddress').textContent = direccion;
+					document.getElementById('userPhone').textContent = sanitizeNumber(telefono);
+					document.getElementById('editForm').style.display = 'none';
+				} else {
+					const errorData = await response.json();
+					openCustomModal('Error de Actualización', 'Error al actualizar: ' + (errorData.message || 'Error desconocido.'));
+				}
+			} catch (error) {
+				console.error('Error al enviar la actualización:', error);
+				openCustomModal('Error de Red', 'Ocurrió un error al conectar con el servidor.');
+			}
+		}
+
+		// FUNCIÓN VERIFICACION (ADMIN) - EN EL FRONTEND
+		async function verifyAdminProcessing(carritoId) {
+			try {
+				// CORRECCIÓN 2: Usar el carritoId en la URL
+				const response = await fetch(`${API_BASE_URL}/carrito/verificar/admin/${carritoId}`, {
+					headers: {'Authorization': `Bearer ${token}`}
+				});
+
+				if (response.ok) {
+					// 🛑 LÓGICA DE ÉXITO (Status 200 OK) 🛑
+					// Solo se ejecuta si *todas* las validaciones Java pasaron y se generó la Factura
+					openCustomModal('Proceso de Orden', 'Verificación de Etapa Registrada. La orden ha avanzado al siguiente estado. Presione Aceptar para continuar revisando el progreso.');
+					await loadPurchaseHistory(); // Actualiza la lista de entregados
+					loadAllCarts(); // Recarga la lista (el carrito ya no estará en verificación)
+
+				} else if (response.status === 400 || response.status === 404) {
+
+					// 🛑 LÓGICA DE ERROR ESPECÍFICO (400 FRAUDE o 404 NO PENDIENTE) 🛑
+					try {
+						const errorMessage = await response.text();
+
+						if (errorMessage && errorMessage.length > 5) {
+							// Mostrar el mensaje detallado de la CarritoExcepcion
+							openCustomModal('Error de Verificación', errorMessage);
+						} else if (response.status === 404) {
+							openCustomModal('Orden No Encontrada', 'No hay órdenes pendientes de verificación para este cliente.');
+						} else {
+							openCustomModal('Error Desconocido', 'Error de verificación. Comuníquese con administración.');
+						}
+
+						// Si hay un error, solo recargamos la lista después de mostrar el mensaje.
+						loadAllCarts();
+
+					} catch (textError) {
+						openCustomModal('Error de Lectura', 'Error al leer el mensaje de respuesta del servidor.');
+					}
+
+				} else {
+					// Error de servidor (500) o no esperado.
+					openCustomModal('Error Inesperado', 'Ocurrió un error inesperado al verificar el estado. Código: ' + response.status);
+					loadAllCarts();
+				}
+			} catch (error) {
+				console.error('Error en la conexión:', error);
+				openCustomModal('Error de Red', 'Ocurrió un error al conectar con el servidor.');
+			}
+		}
+
+
+		// 🛑 NUEVA FUNCIÓN: Para finalizar la compra y generar la factura (usado en PENDIENTE/EFECTIVO)
+		async function finalizarCompra(carritoId) {
+			if (confirm(`¿Confirmas finalizar la compra ID #${carritoId}? Esto generará la factura de tu orden y pasará a PENDIENTE DE ENTREGA.`)) {
+				try {
+					// Asumimos que este endpoint en el backend hace la transición a COMPLETADO y crea la Factura PENDIENTE_ENTREGA
+					const response = await fetch(`${API_BASE_URL}/carrito/checkout/efectivo/${userId}`, {
+						method: 'POST',
+						headers: {'Authorization': `Bearer ${token}`}
+					});
+
+					if (response.ok) {
+						// 🛑 Reemplazo de alert() por modal 🛑
+						openCustomModal('Compra Finalizada', 'Compra finalizada con éxito. Pasando a PENDIENTE DE ENTREGA.');
+						// alert('Compra finalizada con éxito. Pasando a PENDIENTE DE ENTREGA.');
+						// Recargar facturas (para obtener la factura PENDIENTE_ENTREGA) y carritos para actualizar la vista
+						await loadPurchaseHistory();
+						loadAllCarts();
+					} else {
+						const errorData = await response.json();
+						// 🛑 Reemplazo de alert() por modal 🛑
+						openCustomModal('Error de Compra', 'Error al finalizar la compra: ' + (errorData.message || 'Error desconocido.'));
+						// alert('Error al finalizar la compra: ' + (errorData.message || 'Error desconocido.'));
+					}
+				} catch (error) {
+					console.error('Error en la conexión:', error);
+					// 🛑 Reemplazo de alert() por modal 🛑
+					openCustomModal('Error de Red', 'Ocurrió un error al conectar con el servidor.');
+					// alert('Ocurrió un error al conectar con el servidor.');
+				}
+			}
+		}
+
+
+		async function loadPurchaseHistory() {
+		    try {
+		        // 🛑 ASUMIMOS que este endpoint trae TODAS las facturas del cliente (ENTREGADO y PENDIENTE_ENTREGA)
+		        const response = await fetch(`${API_BASE_URL}/facturas/cliente/${userId}`, {
+		            headers: {'Authorization': `Bearer ${token}`}
+		        });
+
+		        // 🛑 LIMPIAMOS Y POBLAMOS LA LISTA DE CARRETOS ENTREGADOS
+		        deliveredCartIds.clear();
+
+		        if (response.ok) {
+		            const historyData = await response.json();
+		            const historyDiv = document.getElementById('purchaseHistory');
+		            historyDiv.innerHTML = ''; // Limpia el contenido previo
+
+		            // 🛑 ADICIÓN 1: Limpiar la cache de facturas antes de recargar
+		            storedFacturasData = {};
+
+		            const facturasEntregadas = historyData.filter(f => f.estado && f.estado.toUpperCase() === 'ENTREGADO');
+
+		            if (facturasEntregadas.length === 0) {
+		                historyDiv.innerHTML = '<p>No hay compras registradas.</p>';
+		            } else {
+		                facturasEntregadas.forEach(factura => {
+
+		                    // 🛑 ADICIÓN 2: Almacenar la factura completa usando el ID de factura como llave
+		                    storedFacturasData[factura.id] = factura;
+
+		                    // 🛑 LÓGICA CLAVE: Si está ENTREGADO, marcamos el carrito asociado para ocultarlo de la lista de órdenes.
+		                    if (factura.carrito && factura.carrito.id) {
+		                        deliveredCartIds.add(factura.carrito.id);
+		                    }
+
+		                    const purchaseItem = document.createElement('div');
+		                    purchaseItem.classList.add('history-item');
+
+		                    const date = new Date(factura.fechaEmision).toLocaleString();
+		                    const carrito = factura.carrito;
+		                    const cliente = factura.cliente;
+
+		                    // 🛑 Muestra el nombre completo del cliente
+		                    const nombreCompleto = `${cliente.nombre || ''} ${cliente.apellido || ''}`.trim();
+
+		                    // 1. Cabecera de la factura (Datos de la empresa y cliente)
+		                    let detailHtml = `
+		                            <h4>DETALLE DE BOLETA #${factura.id}</h4>
+		                            <small>${date}</small>
+		                            <hr style="margin: 10px 0;">
+		                            <div>
+		                                <p><strong>RUC Empresa:</strong> 2056XXXXXX</p>
+		                                <p><strong>Nombre Empresa:</strong> CruzMarket S.A.C.</p>
+		                            </div>
+		                            <hr style="margin: 10px 0;">
+		                            <div>
+		                                <p><strong>Cliente:</strong> ${nombreCompleto || 'No especificado'}</p>
+		                                <p><strong>DNI Cliente:</strong> ${cliente.dni || 'No especificado'}</p>
+		                                <p><strong>Dirección:</strong> ${cliente.direccion || 'No especificada'}</p>
+		                            </div>
+		                            <hr style="margin: 10px 0;">
+		                            <h5>Productos Comprados:</h5>
+		                        `;
+
+		                    // 2. Detalle de los productos (DetalleCarrito)
+		                    if (carrito && carrito.detalles && carrito.detalles.length > 0) {
+		                        detailHtml += '<ul style="list-style-type: none; padding-left: 0;">';
+
+		                        carrito.detalles.forEach(item => {
+		                            const subtotal = item.cantidad * item.precioUnitario;
+
+		                            // 🟢 Lógica para SKU y Talla 🟢
+		                            const sku = item.producto.sku || 'N/A';
+
+		                            // Usamos item.talla o item.tallaSeleccionada y lo validamos.
+		                            const talla = item.talla || item.tallaSeleccionada;
+
+		                            // Generamos la etiqueta de Talla solo si la talla NO es null, undefined, o la cadena "N/A"
+		                            const tallaDisplay = (talla && talla.toUpperCase() !== 'N/A')
+		                                ? `| Talla: ${talla}`
+		                                : ''; // Deja vacío si es N/A o null
+
+		                            detailHtml += `
+		                                    <li style="margin-bottom: 5px;">
+		                                        • ${item.producto.nombre} (x${item.cantidad})
+		                                        <span class="d-block text-muted" style="margin-left: 15px; font-size: 0.9em;">
+		                                            SKU: ${sku} ${tallaDisplay}
+		                                        </span>
+		                                        <span style="float: right;">S/${item.precioUnitario.toFixed(2)} c/u | Subtotal: S/${subtotal.toFixed(2)}</span>
+		                                    </li>
+		                                `;
+		                        });
+		                        detailHtml += '</ul>';
+		                    } else {
+		                        detailHtml += '<p>No se encontraron detalles de productos.</p>';
+		                    }
+
+		                    // 3. Precio Total
+		                    detailHtml += `
+		                            <hr style="margin: 10px 0;">
+		                            <p style="font-size: 1.2em;"><strong>PRECIO TOTAL: S/${factura.montoTotal.toFixed(2)}</strong></p>
+		                        `;
+
+		                    purchaseItem.innerHTML = detailHtml;
+		                    historyDiv.appendChild(purchaseItem);
+		                });
+		            }
+		        } else if (response.status === 204) {
+		            document.getElementById('purchaseHistory').innerHTML = '<p>No hay compras registradas.</p>';
+		        } else {
+		            console.error('Error al cargar el historial:', response.status);
+		            document.getElementById('purchaseHistory').innerHTML = '<p>Error al cargar el historial de facturas.</p>';
+		        }
+		        return true;
+		    } catch (error) {
+		        console.error('Error de red o de servidor:', error);
+		        document.getElementById('purchaseHistory').innerHTML = '<p>Ocurrió un error al conectar con el servidor.</p>';
+		        return false;
+		    }
+		}
+
+
+		// 🛑 Importante: El número de vendedor se ha eliminado como constante.
+		// La URL de WhatsApp ahora es fija y se define dentro de la función loadAllCarts.
+		// Si esta URL cambia, deberás modificarla directamente aquí:
+		const WHATSAPP_LINK = 'https://wa.me/message/3YDZ5N5LHMBJM1'; // Reemplaza esto con tu link final, sin mostrar el número.
+
+		// ⬅️ FUNCIÓN MODIFICADA: Implementa la lógica de visualización para EFECTIVO/YAPE en estado COMPLETADO
+		async function loadAllCarts() {
+			try {
+				// 🛑 ASUMIMOS que este endpoint trae carritos PENDIENTE, VERIFICACION, y COMPLETADO
+				const response = await fetch(`${API_BASE_URL}/carrito/historial/${userId}`, {
+					headers: {'Authorization': `Bearer ${token}`}
+				});
+
+				const allCartsDiv = document.getElementById('allCartsList');
+				allCartsDiv.innerHTML = '';
+
+				if (response.ok) {
+					const allCartsData = await response.json();
+
+					// 🛑 FILTRO CLAVE: Muestra el carrito si:
+					// 1. Está en PENDIENTE o VERIFICACION (aún en proceso).
+					// 2. Está en COMPLETADO PERO su ID NO está en deliveredCartIds (Factura PENDIENTE_ENTREGA).
+					const cartsData = allCartsData.filter(carrito => {
+						const estado = carrito.estado ? carrito.estado.toUpperCase() : 'DESCONOCIDO';
+						const carritoId = carrito.id;
+
+						const isPending = estado === 'PENDIENTE' || estado === 'VERIFICACION';
+						// Mantenemos el COMPLETADO si su ID no fue marcado como entregado en loadPurchaseHistory()
+						const isCompletedButNotDelivered = estado === 'COMPLETADO' && !deliveredCartIds.has(carritoId);
+
+						return isPending || isCompletedButNotDelivered;
+					});
+
+					if (cartsData.length === 0) {
+						allCartsDiv.innerHTML = '<p>No hay órdenes en proceso o pendientes de verificación. Las órdenes finalizadas se encuentran en el Historial de Facturas.</p>';
+					} else {
+						cartsData.forEach(carrito => {
+							const cartItem = document.createElement('div');
+							cartItem.classList.add('history-item');
+							const date = new Date(carrito.fechaCreacion).toLocaleString();
+							const estado = carrito.estado ? carrito.estado.toUpperCase() : 'DESCONOCIDO';
+							const metodoPago = carrito.metodoPago ? carrito.metodoPago.toUpperCase() : 'N/A';
+
+							let estadoClass = 'text-primary';
+							let estadoDisplay = estado;
+							let actionButton = '';
+
+							// ➡️ Enlace de WhatsApp fijo (usa la constante WHATSAPP_LINK)
+							const whatsappLink = WHATSAPP_LINK;
+
+							if (estado === 'PENDIENTE') {
+								estadoClass = 'text-primary';
+								estadoDisplay = 'CARRITO ACTIVO / PENDIENTE DE PAGO';
+								// Asumo que el botón de completar solo sale si es PENDIENTE (ej. pago en efectivo o transferencia sin iniciar)
+								actionButton = `<button class="btn-finalizar-compra" onclick="window.location.href='/compras/carrito'">Completar / Pagar</button>`;
+
+							} else if (estado === 'VERIFICACION') {
+								estadoClass = 'text-info';
+								estadoDisplay = 'VERIFICACIÓN DE PAGO (YAPE/TRANSFERENCIA)';
+								// CORRECCIÓN CLAVE: Pasa carrito.id a la función
+								actionButton = `<button class="btn-verify-admin" onclick="verifyAdminProcessing(${carrito.id})">Verificar Estado</button>`;
+
+							} else if (estado === 'COMPLETADO') {
+
+								estadoClass = 'text-warning';
+
+								// ⚙️ LÓGICA DE ESTADO COMPLETADO - SOLO TEXTO Y LINK
+								const contactMessageHtml = `
+			                                                <br>
+			                                                <span style="font-weight: bold;">
+			                                                    Comunícate
+			                                                    <a href="${whatsappLink}" target="_blank" style="color: #25D366; text-decoration: underline; display: inline-flex; align-items: center; gap: 4px;">
+			                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+			                                                            <path d="M12.0003 2.00006C6.4803 2.00006 2.0003 6.48006 2.0003 12.0001C2.0003 13.7501 2.4503 15.4201 3.2703 16.8801L2.0103 22.0001L7.2203 20.7501C8.6803 21.5701 10.3503 22.0001 12.0003 22.0001C17.5203 22.0001 22.0003 17.5201 22.0003 12.0001C22.0003 6.48006 17.5203 2.00006 12.0003 2.00006ZM15.9603 16.2301C15.8303 16.5201 15.6803 16.6301 15.4503 16.6501C15.2203 16.6601 14.2803 16.3101 12.0003 15.4401C9.7203 14.5701 8.2803 12.6001 8.0403 12.2801C7.8003 11.9601 7.2103 11.1601 7.2103 10.3601C7.2103 9.56006 7.7003 9.32006 7.9403 9.07006C8.1803 8.82006 8.4403 8.79006 8.6003 8.79006C8.7603 8.79006 8.9403 8.82006 9.0903 8.84006C9.2503 8.87006 9.5303 9.47006 9.5603 9.94006C9.5903 10.4101 9.5903 10.5901 9.4203 10.7901C9.2503 10.9901 9.1203 11.1501 9.0103 11.2701C8.9103 11.3801 8.7903 11.5201 8.9703 11.8301C9.1503 12.1401 9.8703 13.2501 10.9303 14.1901C11.8403 15.0001 12.5603 15.2801 12.8203 15.4101C13.1103 15.5601 13.3103 15.5401 13.4803 15.3401C13.6803 15.1301 14.0703 14.7301 14.4903 14.2601C14.9103 13.7901 15.0103 13.8401 15.2803 14.0301C15.5603 14.2201 15.7403 14.3301 15.9603 14.4301C16.1803 14.5301 16.5103 14.7001 16.4803 15.0201C16.4503 15.3401 16.4503 15.7101 16.2903 16.0301C16.1403 16.3501 16.0703 16.4801 15.9603 16.2301Z"/>
+			                                                        </svg>
+			                                                        a este número
+			                                                    </a>
+			                                                    para coordinar la entrega.
+			                                                </span>
+			                                            `;
+
+								if (metodoPago === 'EFECTIVO') {
+									// ➡️ PAGO PENDIENTE - PENDIENTE DE ENTREGAR (Efectivo)
+									estadoDisplay = 'PAGO PENDIENTE - PENDIENTE DE ENTREGAR';
+									estadoDisplay += contactMessageHtml;
+									actionButton = `<small style="color:red; font-weight:bold;">Una vez pagado y coordinada la entrega, se actualizará el estado.</small>`;
+								} else {
+									// ➡️ PAGO HECHO - PENDIENTE DE ENTREGAR (Yape/Transferencia, pago confirmado por admin)
+									estadoDisplay = 'PAGO HECHO - PENDIENTE DE ENTREGAR';
+									estadoDisplay += contactMessageHtml;
+									actionButton = `<small style="color:red; font-weight:bold;">El pago está verificado. Esperando la confirmación del producto entregado.</small>`;
+								}
+							}
+
+							cartItem.innerHTML = `
+								                        <strong>ID Orden #${carrito.id}</strong> - <small>${date}</small>
+								                        <p>Total: S/${carrito.precioTotal.toFixed(2)}</p>
+								                        <p>Método: <span>${metodoPago}</span></p>
+								                        <p>Estado: <span class="${estadoClass}"><strong>${estadoDisplay}</strong></span></p>
+								                        ${actionButton}
+								                    `;
+							allCartsDiv.appendChild(cartItem);
+						});
+					}
+				} else if (response.status === 404 || response.status === 204) {
+					allCartsDiv.innerHTML = '<p>No hay órdenes en proceso o pendientes de verificación. Las órdenes finalizadas se encuentran en el Historial de Facturas.</p>';
+				} else {
+					console.error('Error al cargar carritos:', response.status);
+					allCartsDiv.innerHTML = '<p>Error al cargar el historial de órdenes pendientes.</p>';
+				}
+			} catch (error) {
+				console.error('Error de red o de servidor:', error);
+				allCartsDiv.innerHTML = '<p>Ocurrió un error al conectar con el servidor.</p>';
+			}
+		}
+
+
+		// --- NUEVAS FUNCIONES PARA IMPRESIÓN ---
+
+		/**
+		 * Función principal para generar el PDF de la boleta.
+		 * Utiliza los datos almacenados en storedFacturasData.
+		 */
+		async function printBoleta() {
+		    // Aseguramos que las librerías estén cargadas
+		    if (!window.jspdf || !window.html2canvas) {
+		        openCustomModal('Error de Impresión', 'Las librerías de impresión (jsPDF/html2canvas) aún no están cargadas. Espere un momento e intente de nuevo.');
+		        return;
+		    }
+
+		    const boletaIdInput = document.getElementById('boletaNumberInput');
+		    const boletaId = boletaIdInput.value.trim();
+
+		    if (!boletaId || isNaN(boletaId) || parseInt(boletaId) <= 0) {
+		        openCustomModal('Error de Impresión', 'Por favor, ingrese un número de boleta válido (solo números).');
+		        return;
+		    }
+
+		    // 🛑 LÓGICA CLAVE: Obtener los datos de la boleta usando el ID (el número ingresado) 🛑
+		    const boletaData = storedFacturasData[parseInt(boletaId)];
+
+		    if (!boletaData) {
+		        openCustomModal('Boleta No Encontrada', `La boleta N° ${boletaId} no está en su historial de boletas completadas. Asegúrese de que el número sea correcto y que la boleta se haya cargado previamente.`);
+		        return;
+		    }
+
+		    try {
+		        // 2. Llenar el template oculto con los datos
+		        const pdfContent = document.getElementById('boletaPDFContent');
+		        const cliente = boletaData.cliente;
+		        const carrito = boletaData.carrito;
+		        const fecha = new Date(boletaData.fechaEmision).toLocaleDateString();
+
+		        // 🛑 Llenado de información (DNI, Nombre, Total) 🛑
+		        document.getElementById('pdf_boleta_numero').textContent = boletaData.id;
+		        document.getElementById('pdf_fecha_emision').textContent = fecha;
+		        const nombreCompletoCliente = `${cliente.nombre || ''} ${cliente.apellido || ''}`.trim() || 'N/A';
+		        document.getElementById('pdf_cliente_nombre').textContent = nombreCompletoCliente;
+		        document.getElementById('pdf_cliente_dni').textContent = cliente.dni || 'N/A';
+
+		        // 🛑 CAMBIO RUS: Solo asignamos el monto total, sin desglosar IGV ni Subtotal
+		        document.getElementById('pdf_total').textContent = boletaData.montoTotal.toFixed(2);
+
+		        // Llenar los ítems
+		        const itemsList = document.getElementById('pdf_items_detalle');
+		        itemsList.innerHTML = '';
+		        if (carrito && carrito.detalles) {
+		            carrito.detalles.forEach(item => {
+		                const subtotalItem = item.cantidad * item.precioUnitario;
+		                const row = document.createElement('tr');
+		                row.innerHTML = `
+		                    <td style="text-align: left; padding: 3px 0;">${item.cantidad}</td>
+		                    <td style="text-align: left; padding: 3px 0;">${item.producto.nombre}</td>
+		                    <td style="text-align: right; padding: 3px 0;">${subtotalItem.toFixed(2)}</td>
+		                `;
+		                itemsList.appendChild(row);
+		            });
+		        }
+
+		        // 3. Generar la imagen del HTML usando html2canvas
+		        const canvas = await html2canvas(pdfContent, {
+		            scale: 3,
+		            useCORS: true,
+		            scrollY: 0,
+		            scrollX: 0,
+		            windowWidth: pdfContent.offsetWidth,
+		            windowHeight: pdfContent.offsetHeight
+		        });
+
+		        // 4. Convertir la imagen (canvas) a PDF usando jsPDF
+		        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+		        const { jsPDF } = window.jspdf;
+		        const pdf = new jsPDF({
+		            orientation: 'portrait',
+		            unit: 'mm',
+		            format: [80, 297] // Formato de boleta de 80mm de ancho
+		        });
+
+		        const pdfWidth = 80;
+		        const pdfMargin = 5;
+		        const imgWidth = pdfWidth - (pdfMargin * 2);
+		        const imgHeight = canvas.height * imgWidth / canvas.width;
+
+		        pdf.addImage(imgData, 'JPEG', pdfMargin, pdfMargin, imgWidth, imgHeight);
+
+		        // 5. Abrir el PDF en una nueva pestaña
+		        pdf.output('dataurlnewwindow', { filename: `Boleta_RUS_Nro_${boletaData.id}.pdf` });
+
+		        openCustomModal('Boleta Generada', `La Boleta N° ${boletaData.id} (NUEVO RUS) ha sido generada y se abrirá en una nueva ventana/pestaña.`);
+
+		    } catch (error) {
+		        console.error('Error al generar la boleta:', error);
+		        openCustomModal('Error de Impresión', error.message || 'Ocurrió un error inesperado al generar el PDF. Revise la consola para más detalles.');
+		    }
+		}
+
+		// 🛑 EVENT LISTENER para el botón de imprimir
+		document.getElementById('printBoletaBtn').addEventListener('click', printBoleta);
+
+		// --- FIN NUEVAS FUNCIONES PARA IMPRESIÓN ---
+
+
+		// 🛑 INICIALIZACIÓN MODIFICADA: Aseguramos que las Facturas se carguen primero
+		window.onload = () => {
+			loadUserInfo();
+			// Cargamos facturas primero para identificar los carritos entregados (ENTREGADO)
+			loadPurchaseHistory().then(() => {
+				// Luego cargamos los carritos y aplicamos el filtro de ocultamiento
+				loadAllCarts();
+			});
+		};
+
+		document.getElementById('editBtn').addEventListener('click', () => {
+			document.getElementById('editForm').style.display = 'block';
+			document.getElementById('dniInput').value = document.getElementById('userDni').textContent === 'No especificado' ? '' : document.getElementById('userDni').textContent;
+			document.getElementById('addressInput').value = document.getElementById('userAddress').textContent === 'No especificado' ? '' : document.getElementById('userAddress').textContent;
+		});
+
+		document.getElementById('editForm').addEventListener('submit', function (event) {
+			event.preventDefault();
+			updateUserInfo();
+		});
+
+		document.getElementById('logoutBtn').addEventListener('click', () => {
+			localStorage.removeItem('token');
+			localStorage.removeItem('userId');
+			window.location.replace('/clientes/login');
+		});
+
+		document.getElementById('backBtn').addEventListener('click', () => {
+			window.location.href = '/';
+		});
+	</script>
+</body>
+
+</html>

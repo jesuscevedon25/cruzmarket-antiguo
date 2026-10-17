@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+		crossorigin="anonymous">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+		crossorigin="anonymous" referrerpolicy="no-referrer" />
+	<link rel="stylesheet" th:href="@{/css/style.css}">
+
+	<style>
+		/* Recomendación más flexible */
+		.product-img {
+			max-width: 100%;
+			height: auto;
+			max-height: 250px;
+			width: auto;
+			border-radius: 8px;
+			object-fit: contain;
+			background-color: #fff;
+			padding: 5px;
+		}
+
+		.product-img {
+			max-width: 100%;
+			border-radius: 8px;
+		}
+
+		.price-old {
+			text-decoration: line-through;
+			color: #888;
+			margin-right: 10px;
+		}
+
+		.price-new {
+			color: rgb(0, 128, 255);
+			font-size: 1.5rem;
+			font-weight: bold;
+		}
+
+		.discount-badge {
+			position: absolute;
+			top: 10px;
+			left: 10px;
+			background: rgb(255, 0, 0);
+			color: white;
+			padding: 5px 10px;
+			border-radius: 5px;
+			font-size: 0.9rem;
+			font-weight: bold;
+		}
+
+		.btn-cart {
+			background: rgb(0, 128, 255);
+			color: white;
+			font-weight: bold;
+		}
+
+		.btn-cart:hover {
+			background: rgb(0, 128, 255);
+		}
+	</style>
+</head>
+
+<body>
+	<div th:replace="fragments/navbar :: navbars"></div>
+	<div class="container mt-5">
+		<div class="row">
+			<div class="col-md-7">
+				<h2 th:text="${producto.nombre}"></h2>
+				<p>
+					<span th:if="${producto.precioOferta != null}" class="price-old"
+						th:text="'S/' + ${#numbers.formatDecimal(producto.precio, 1, 2)}"></span>
+					<span class="price-new"
+						th:text="'S/' + ${#numbers.formatDecimal(producto.precioOferta != null ? producto.precioOferta : producto.precio, 1, 2)}"></span>
+				</p>
+				<p th:text="${producto.descripcionCorta}"></p>
+				<p th:if="${producto.stock > 0}" class="text-success"><strong>Hay existencias</strong></p>
+				<p th:if="${producto.stock == 0}" class="text-danger"><strong>Sin stock</strong></p>
+
+				<button th:if="${producto.stock > 0}" class="btn btn-cart btn-lg mr-2"
+				        th:data-id="${producto.id}"
+				        th:data-nombre="${producto.nombre}"
+				        th:data-precio="${producto.precioOferta != null ? producto.precioOferta : producto.precio}"
+				        onclick="agregarAlCarrito(event)"> Añadir al carrito
+				    </button>
+
+				<button th:if="${producto.stock > 0}" class="btn btn-outline-danger btn-lg"
+					th:onclick="|agregarAFavoritos(${producto.id})|">
+					<i class="fas fa-heart"></i>
+				</button>
+
+				<p th:if="${producto.stock <= 0}" class="text-danger my-auto"></p>
+
+				<a th:href="@{/compras/carrito}" class="btn btn-outline-dark btn-lg mx-2">Ver carrito</a>
+				<a th:href="@{/productos/listar}" class="btn btn-secondary btn-lg">Regresar</a>
+			</div>
+
+			<div class="col-md-5 position-relative">
+				<span th:if="${producto.precioOferta != null}" class="discount-badge">
+					<span
+						th:text="${T(java.lang.Math).round((1 - producto.precioOferta / producto.precio) * 100)}"></span>%
+					OFF
+				</span>
+				<img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}" class="product-img shadow">
+			</div>
+		</div>
+
+		<div class="row mt-5">
+			<div class="col-12">
+				<div class="additional-info-container">
+					<h4 class="mb-3">Información Adicional</h4>
+					<table class="table additional-info-table">
+						<tbody>
+							<tr>
+								<th>Descripción</th>
+								<td th:text="${producto.descripcionLarga}">Descripcion del producto</td>
+							</tr>
+							<tr>
+								<th>SKU</th>
+								<td th:text="${producto.sku}">SKU del producto</td>
+							</tr>
+							<tr>
+								<th>Marca</th>
+								<td th:text="${producto.marca}">Marca del producto</td>
+							</tr>
+
+							<!-- NUEVA FILA ÚNICA PARA MOSTRAR LA JERARQUÍA COMPLETA -->
+							<tr>
+								<th>Clasificación</th>
+								<td th:text="${
+                                    producto.categoria
+                                    + (#strings.isEmpty(producto.subcategoria1) ? '' : ' > ' + producto.subcategoria1)
+                                    + (#strings.isEmpty(producto.subcategoria2) ? '' : ' > ' + producto.subcategoria2)
+                                    + (#strings.isEmpty(producto.subcategoria3) ? '' : ' > ' + producto.subcategoria3)
+                                }">Categoría > Subcategoría 1 > Subcategoría 2</td>
+							</tr>
+
+							<tr th:if="${producto.colores != null}">
+								<th>Colores</th>
+								<td th:text="${producto.colores}">Colores del producto</td>
+							</tr>
+						</tbody>
+					</table>
+					<div class="row mt-5">
+					    <div class="col-12">
+					        <div class="additional-info-container">
+					            <div th:if="${tallasDisponibles != null and not #lists.isEmpty(tallasDisponibles)}">
+					                <h3>Tallas Disponibles:</h3>
+					                <select name="tallaSeleccionada" id="tallaSelect" class="form-control">
+					                    <option value="" disabled selected>Selecciona una talla</option>
+					                    <option th:each="stock : ${tallasDisponibles}"
+					                            th:value="${stock.nombreTalla}"
+					                            th:text="${stock.nombreTalla}"> Talla
+					                    </option>
+					                </select>
+					            </div>
+					            </div>
+					    </div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div th:replace="~{fragments/footer :: footer}"></div>
+	<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
+			crossorigin="anonymous"></script>
+
+		<script th:inline="javascript">
+
+
+			const API_BASE_URL = 'http://localhost:8088/';
+
+			   // 🟢 FUNCIÓN COMPLETA 🟢
+			   // Asegúrate de incluir 'event' en la llamada desde el HTML: onclick="agregarAlCarrito(event)"
+			   async function agregarAlCarrito(event) {
+
+			       const button = event.currentTarget;
+			       const productoId = button.dataset.id;
+
+			       const tallaSelect = document.getElementById('tallaSelect');
+			       let tallaSeleccionada = 'N/A'; // Valor por defecto si no hay tallas
+
+			       if (tallaSelect) {
+			           if (tallaSelect.value === '' || tallaSelect.value === 'N/A') {
+			               alert('Por favor, selecciona una talla antes de añadir al carrito.');
+			               return;
+			           }
+			           tallaSeleccionada = tallaSelect.value;
+			       }
+
+			       // 🛑 Lógica para evitar el error 400 'noSlash' 🛑
+			       let tallaLimpia = tallaSeleccionada.replace(/\//g, '-');
+			       const tallaUrl = encodeURIComponent(tallaLimpia);
+			       // ------------------------------------
+
+			       const token = localStorage.getItem('token');
+			       const userId = localStorage.getItem('userId');
+
+			       if(!userId || !token) {
+			           alert('Debes iniciar sesión para agregar productos al carrito.');
+			           window.location.href = '/clientes/login';
+			           return;
+			       }
+
+			       try {
+			           // La URL incluye la talla: /agregar/{userId}/{productoId}/{tallaUrl}/1
+			           const response = await fetch(`${API_BASE_URL}api/v1/carrito/agregar/${userId}/${productoId}/${tallaUrl}/1`, {
+			               method: 'POST',
+			               headers: {
+			                   'Authorization': `Bearer ${token}`
+			               }
+			           });
+
+			           // 🟢 ESTE ES EL CÓDIGO CLAVE PARA EL MENSAJE DE ÉXITO 🟢
+			           if (response.ok) {
+			               alert('¡Se agregó el producto al carrito exitosamente!'); // Mensaje de éxito
+			           } else {
+			               // Mensaje de error (si hay fallo en el backend, stock, etc.)
+			               const errorMsg = await response.text();
+			               alert('Error al agregar el producto al carrito: ' + errorMsg);
+			           }
+
+			       } catch (error) {
+			           console.error('Error en la conexión:', error);
+			           alert('Ocurrió un error al conectar con el servidor.');
+			       }
+			   }
+
+			async function agregarAFavoritos(productoId) {
+				const token = localStorage.getItem('token');
+				const userId = localStorage.getItem('userId');
+
+				if (!userId || !token) {
+					alert('Debes iniciar sesión para agregar favoritos.');
+					return;
+				}
+				try {
+					const response = await fetch(`${API_BASE_URL}/favoritos`, {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+							'Authorization': `Bearer ${token}`
+						},
+						body: JSON.stringify({ clienteId: userId, productoId: productoId })
+					});
+
+					if (response.ok) {
+						alert('Producto añadido a favoritos!');
+					} else {
+						const errorData = await response.json();
+						alert('Error: ' + (errorData.message || 'No se pudo agregar a favoritos.'));
+					}
+				} catch (error) {
+					alert('Error en la conexión con el servidor.');
+				}
+			}
+		</script>
+</body>
+
+</html>

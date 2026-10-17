@@ -1,0 +1,218 @@
+/* Estilos generales */
+
+body,
+
+html {
+
+	height: 100%;
+
+	margin: 0;
+
+	font-family: 'Arial', sans-serif;
+
+	background-color: #f2f2f2;
+	/* Un fondo gris claro para la página */
+
+}
+
+
+
+/* Barra superior (roja) */
+
+.top-navbar {
+
+	background-color: rgb(0, 128, 255);
+	/* Rojo intenso como en Crossover */
+
+	color: white;
+
+	padding: 5px 0;
+
+	font-size: 0.9rem;
+
+}
+
+
+
+.top-navbar .social-icons a,
+
+.top-navbar .user-options a {
+
+	color: white;
+
+	margin: 0 8px;
+
+	text-decoration: none;
+
+}
+
+
+
+.top-navbar .social-icons a:hover,
+
+.top-navbar .user-options a:hover {
+
+	color: #ffd700;
+	/* Dorado al pasar el ratón */
+
+}
+
+
+
+/* Barra principal (negra) */
+
+.main-navbar {
+
+	background-color: #212121;
+	/* Negro casi puro */
+
+	padding: 10px 0;
+
+	border-bottom: 3px solid rgb(0, 128, 255);
+	/* Borde rojo inferior */
+
+}
+
+
+
+.main-navbar .navbar-brand {
+
+	color: white;
+
+	font-size: 2.5rem;
+	/* Tamaño del logo */
+
+	font-weight: bold;
+
+	display: flex;
+
+	align-items: center;
+
+	margin-right: 20px;
+
+}
+
+
+.main-navbar .navbar-brand img {
+
+	height: 40px;
+	/* Tamaño del logo de araña/marca */
+
+	margin-right: 10px;
+
+}
+
+
+
+.main-navbar .form-inline .form-control {
+
+	border-radius: 20px;
+	/* Bordes redondeados para el buscador */
+
+	padding-right: 70px;
+	/* Espacio para el ícono de búsqueda */
+
+	position: relative;
+
+}
+
+
+
+.main-navbar .form-inline .btn-outline-success {
+
+	border-radius: 20px;
+
+	margin-left: -75px;
+	/* Superponer el botón en el input */
+
+	z-index: 5;
+
+	border: none;
+
+	color: rgb(0, 0, 0);
+
+}
+
+
+.main-navbar .form-inline .btn-outline-success:hover {
+
+	color: #ffd700;
+
+}
+
+
+
+.main-navbar .nav-link {
+
+	color: white;
+
+	font-weight: bold;
+
+	padding: 0.5rem 1rem;
+
+}
+
+
+
+.main-navbar .nav-link:hover {
+
+	color: #ffd700;
+
+}
+
+
+
+.main-navbar .navbar-nav .dropdown-menu {
+
+	background-color: #212121;
+
+	border: none;
+
+}
+
+
+
+.main-navbar .navbar-nav .dropdown-item {
+
+	color: white;
+
+}
+
+
+
+.main-navbar .navbar-nav .dropdown-item:hover {
+
+	background-color: rgb(0, 128, 255);
+	/* Rojo al pasar el ratón */
+
+	color: white;
+
+}
+
+.search-container {
+        position: relative;
+    }
+    .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background-color: white;
+        border: 1px solid #ccc;
+        border-top: none;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none; /* Oculto por defecto */
+    }
+    .search-results a {
+        display: block;
+        padding: 10px;
+        text-decoration: none;
+        color: #333;
+    }
+    .search-results a:hover {
+        background-color: #f0f0f0;
+    }
+
+

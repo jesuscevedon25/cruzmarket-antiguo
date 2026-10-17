@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finalizar Compra - Checkout</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .checkout-container {
+            margin-top: 50px;
+            margin-bottom: 50px;
+        }
+        .payment-option-card {
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        .payment-option-card:hover {
+            border-color: #007bff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .qr-placeholder {
+            width: 250px;
+            height: 250px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #6c757d;
+        }
+
+		@media (min-width: 1200px) {
+						    .container {
+						        max-width: 80%;
+						    }
+						}
+
+    </style>
+</head>
+<body>
+
+	<div th:replace="fragments/navbar :: navbars"></div>
+    <div class="container checkout-container">
+        <h2 class="mb-4">Método de Pago</h2>
+        <div class="row" id="paymentSelection">
+            <div class="col-md-6">
+                <div class="card p-4 text-center payment-option-card" data-method="EFECTIVO" onclick="selectPayment('EFECTIVO')">
+                    <i class="fas fa-money-bill-wave fa-3x mb-3 text-success"></i>
+                    <h4>Pagar en Efectivo</h4>
+                    <p class="text-muted">Paga al recibir o recoger tu pedido. Factura generada de inmediato.</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card p-4 text-center payment-option-card" data-method="YAPE" onclick="selectPayment('YAPE')">
+                    <i class="fas fa-qrcode fa-3x mb-3 text-primary"></i>
+                    <h4>Pagar por Yape/Transferencia</h4>
+                    <p class="text-muted">Se mostrará el QR. Se requiere un código de verificación.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="yapePaymentArea" class="mt-5 p-4 border rounded" style="display: none;">
+            <h4 class="mb-3 text-center">Pago por Yape/Transferencia</h4>
+            <div class="alert alert-info" role="alert">
+                Monto a Pagar: <strong id="yapeTotalAmount">S/0.00</strong>. Realiza la transferencia al QR y luego ingresa el código de operación.
+            </div>
+
+            <div class="d-flex justify-content-center mb-4">
+                <img src="/img/qr-yape.png" alt="Código QR para Yape" class="img-fluid qr-placeholder">
+            </div>
+
+			<div id="yapeInputForm">
+			    <div class="form-group">
+			        <label for="nombreVerificacionCliente">Nombre completo que aparece en la transferencia:</label>
+			        <input type="text" class="form-control form-control-lg" id="nombreVerificacionCliente"
+			               placeholder="Ej: Luis Casas" maxlength="100" required>
+			    </div>
+			    <div class="form-group">
+			        <label for="codigoVerificacionCliente">Código de Verificación (3 o más dígitos):</label>
+			        <input type="text" class="form-control form-control-lg" id="codigoVerificacionCliente" placeholder="Ej: 123456" maxlength="10">
+			    </div>
+
+				<div class="form-group">
+				    <label for="numeroOperacionCliente">
+				        Número de operación:
+				    </label>
+
+				    <input type="text"
+				           class="form-control form-control-lg"
+				           id="numeroOperacionCliente"
+				           placeholder="Ej: 987654321"
+				           maxlength="20">
+				</div>
+
+			    <button class="btn btn-danger btn-block btn-lg" id="confirmYapeCodeBtn">Confirmar Código Yape</button>
+			</div>
+
+            <div id="verificationPendingMessage" class="alert alert-warning mt-3 text-center" style="display: none;">
+                <i class="fas fa-hourglass-half mr-2"></i> ¡Listo! Compra en espera de verificación. No puedes modificar este carrito mientras el administrador confirma el pago.
+            </div>
+        </div>
+
+        <div id="purchaseConfirmedMessage" class="alert alert-success mt-5 text-center" style="display: none;">
+            <i class="fas fa-check-circle fa-2x mr-2"></i>
+            <h4 class="alert-heading">¡Compra Confirmada!</h4>
+            <p id="finalMessage">Su factura ha sido creada.</p>
+            <a href="/productos/listar" class="btn btn-success mt-3">Volver a la Tienda</a>
+        </div>
+
+        <div class="mt-4 text-center">
+             <a href="/compras/carrito" class="btn btn-outline-secondary">Volver al Carrito</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script>
+        const API_BASE_URL = 'http://localhost:8088/';
+        const token = localStorage.getItem('token');
+        const userId = localStorage.getItem('userId');
+        let cartTotal = 0.0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!userId || !token) {
+                alert('Debes iniciar sesión para finalizar la compra.');
+                window.location.href = '/clientes/login';
+                return;
+            }
+            fetchCartTotal();
+            checkVerificationStatus();
+
+            document.getElementById('confirmYapeCodeBtn').addEventListener('click', processYapePayment);
+        });
+
+        // 1. Obtener el total del carrito
+        async function fetchCartTotal() {
+            try {
+                const response = await fetch(`${API_BASE_URL}api/v1/carrito/cliente/${userId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const cartData = await response.json();
+                    cartTotal = cartData.precioTotal;
+                    document.getElementById('yapeTotalAmount').textContent = `S/${cartTotal.toFixed(2)}`;
+                } else if (response.status === 404) {
+                    // Esto ahora puede ocurrir si el único carrito está en VERIFICACION o COMPLETADO
+                    // y el servicio intenta buscar solo PENDIENTE.
+                    // Podemos manejarlo mejor asumiendo 0.0 o redirigiendo si no hay un carrito PENDIENTE.
+                    console.warn('No se encontró un carrito activo PENDIENTE.');
+                    cartTotal = 0.0;
+                    document.getElementById('yapeTotalAmount').textContent = `S/${cartTotal.toFixed(2)}`;
+                } else {
+                    throw new Error('Error al obtener el carrito.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('No se pudo obtener el total del carrito.');
+            }
+        }
+
+        // 2. Revisa el estado del carrito al cargar
+        async function checkVerificationStatus() {
+             try {
+                const response = await fetch(`${API_BASE_URL}api/v1/carrito/estado/${userId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const estado = await response.text();
+
+                    // Si el estado es VERIFICACION, ocultamos la selección de pago
+                    if (estado === 'VERIFICACION') {
+                        document.getElementById('paymentSelection').style.display = 'none';
+                        document.getElementById('yapePaymentArea').style.display = 'block';
+                        document.getElementById('yapeInputForm').style.display = 'none';
+                        document.getElementById('verificationPendingMessage').style.display = 'block';
+                    } else if (estado === 'COMPLETADO') {
+                        document.getElementById('paymentSelection').style.display = 'none';
+                        document.getElementById('yapePaymentArea').style.display = 'none';
+                        document.getElementById('purchaseConfirmedMessage').style.display = 'block';
+                        document.getElementById('finalMessage').textContent = "¡Gracias por tu compra! Tu factura ha sido generada.";
+                    }
+                }
+            } catch (error) {
+                console.warn('No se pudo verificar el estado inicial del carrito, asumiendo PENDIENTE si es la primera vez.');
+            }
+        }
+
+        // 3. Selección de Método de Pago (Efectivo o Yape)
+        function selectPayment(method) {
+            document.querySelectorAll('.payment-option-card').forEach(card => {
+                card.style.borderColor = 'transparent';
+                card.classList.remove('bg-light');
+            });
+
+            const selected = document.querySelector(`.payment-option-card[data-method="${method}"]`);
+            selected.style.borderColor = '#007bff';
+            selected.classList.add('bg-light');
+
+            if (method === 'YAPE') {
+                // ⬅️ CAMBIO CLAVE: Llama a la nueva función para establecer el método YAPE en el backend
+                initiateYapeFlow();
+            } else {
+                document.getElementById('yapePaymentArea').style.display = 'none';
+                if (confirm(`¿Estás seguro de que deseas pagar en ${method}?`)) {
+                     processCashPayment(method);
+                }
+            }
+        }
+
+        // 4. Iniciar Flujo de Pago por Yape (Establece el método YAPE en el carrito en el backend)
+        async function initiateYapeFlow() {
+            if (cartTotal <= 0) {
+                 alert('El carrito está vacío. Por favor, vuelve al carrito.');
+                 return;
+            }
+
+            try {
+                // ⬅️ Endpoint para iniciar pago Yape (backend debe establecer MetodoPago.YAPE)
+                const response = await fetch(`${API_BASE_URL}api/v1/carrito/iniciar/yape/${userId}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    // Si el backend confirma, muestra el área de pago
+                    document.getElementById('yapePaymentArea').style.display = 'block';
+                    alert('Método de pago Yape seleccionado. Procede a realizar la transferencia al QR.');
+                } else {
+                    const errorMsg = await response.text();
+                    alert('Error al iniciar el pago Yape: ' + errorMsg);
+                }
+            } catch (error) {
+                console.error('Error en la conexión:', error);
+                alert('Ocurrió un error al conectar con el servidor.');
+            }
+        }
+
+
+        // 5. Procesar Pago en Efectivo
+
+		        async function processCashPayment(method) {
+		            try {
+		                // ⬅️ CORRECCIÓN DE URL: Debe usar "/checkout/efectivo/"
+		                const response = await fetch(`${API_BASE_URL}api/v1/carrito/checkout/efectivo/${userId}`, {
+		                    method: 'POST',
+		                    headers: { 'Authorization': `Bearer ${token}` }
+		                });
+
+		                if (response.ok) {
+		                    document.getElementById('paymentSelection').style.display = 'none';
+		                    document.getElementById('yapePaymentArea').style.display = 'none';
+		                    document.getElementById('purchaseConfirmedMessage').style.display = 'block';
+		                    // Mensaje actualizado
+		                    document.getElementById('finalMessage').textContent = `Compra en ${method} generada. Su pedido ha sido procesado y será visible en su historial una vez entregado.`;
+		                    localStorage.removeItem('cartData');
+		                } else {
+		                    const errorMsg = await response.text();
+		                    alert('Error al finalizar la compra en efectivo: ' + errorMsg);
+		                }
+		            } catch (error) {
+		                console.error('Error en la conexión:', error);
+		                alert('Ocurrió un error al conectar con el servidor.');
+		            }
+		        }
+
+				// 6. Procesar Pago por Yape/Transferencia (Ingreso de Código y Nombre de Cliente)
+				async function processYapePayment() {
+				    // 🛑 CAMBIO: Obtener también el nombre 🛑
+				    const nombre = document.getElementById('nombreVerificacionCliente').value.trim();
+				    const codigo = document.getElementById('codigoVerificacionCliente').value.trim();
+					const numeroOperacion = document.getElementById('numeroOperacionCliente').value.trim();
+
+				    if (nombre.length === 0) {
+				        alert('Por favor, ingresa el nombre completo que aparece en tu transferencia.');
+				        return;
+				    }
+
+				    if (codigo.length < 3) {
+				        alert('Por favor, ingresa el código de verificación de la transferencia (mínimo 3 dígitos).');
+				        return;
+				    }
+
+					if (numeroOperacion.length === 0) {
+
+					    alert('Por favor, ingresa el número de operación.');
+
+					    return;
+					}
+
+				    try {
+				        // 🛑 CAMBIO CLAVE: Endpoint modificado para incluir el nombre 🛑
+				        // Enviamos el código y el nombre como parámetros de consulta
+						const response = await fetch(
+						`${API_BASE_URL}api/v1/carrito/verificar/cliente/${userId}?codigoCliente=${codigo}&nombreCliente=${encodeURIComponent(nombre)}&numeroOperacionCliente=${numeroOperacion}`,
+						{
+						    method: 'POST',
+						    headers: {
+						        'Authorization': `Bearer ${token}`
+						    }
+						});
+				        // 🛑 FIN CAMBIO CLAVE 🛑
+
+				        if (response.ok) {
+				            alert('Código y Nombre de verificación ingresados con éxito. Su pago está siendo revisado por el administrador.');
+				            document.getElementById('yapeInputForm').style.display = 'none';
+				            document.getElementById('verificationPendingMessage').style.display = 'block';
+				            localStorage.removeItem('cartData');
+				        } else {
+				            const errorMsg = await response.text();
+				            alert('Error al confirmar el pago: ' + errorMsg);
+				        }
+				    } catch (error) {
+				        console.error('Error en la conexión:', error);
+				        alert('Ocurrió un error al conectar con el servidor.');
+				    }
+				}
+
+
+
+    </script>
+	<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
